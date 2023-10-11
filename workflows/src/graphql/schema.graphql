@@ -1,0 +1,8 @@
+extend schema @link(url: "https://specs.apollo.dev/federation/v2.0")
+
+# ROOT
+
+type Mutation {
+  "Deletes all user account, profile, and bookmark data."
+  deleteAllUserData(accountId: ID!): Boolean! @owner(argumentName: "accountId")
+}

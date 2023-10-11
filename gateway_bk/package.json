@@ -1,0 +1,26 @@
+{
+  "name": "marked-gateway",
+  "version": "1.0.0",
+  "description": "The server for the gateway service in the Marked app.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon -r dotenv/config -e env,js ./src/index.js"
+  },
+  "keywords": [],
+  "author": "mandiwise",
+  "license": "MIT",
+  "dependencies": {
+    "@apollo/gateway": "^2.0.1",
+    "apollo-server-express": "^3.6.7",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "express-jwt": "^6.1.1",
+    "graphql": "^16.3.0",
+    "graphql-depth-limit": "^1.1.0",
+    "jwks-rsa": "^2.0.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}

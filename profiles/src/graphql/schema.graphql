@@ -1,0 +1,182 @@
+extend schema
+  @link(url: "https://specs.apollo.dev/federation/v2.0",
+        import: ["@key", "@shareable"])
+
+# SCALARS
+
+"""
+An ISO 8601-encoded UTC date string.
+"""
+scalar DateTime
+
+# ENUMS
+
+"""
+Sorting options for profile connections.
+"""
+enum ProfileOrderBy {
+  "Order profiles ascending by creation time."
+  CREATED_AT_ASC
+  "Order profiles descending by creation time."
+  CREATED_AT_DESC
+  "Order profiles ascending by username."
+  USERNAME_ASC
+  "Order profiles descending by username."
+  USERNAME_DESC
+}
+
+# OBJECTS
+
+"""
+An account is a unique Auth0 user.
+"""
+type Account @key(fields: "id") {
+  id: ID!
+  "Metadata about the user that owns the account."
+  profile: Profile
+}
+
+"""
+Information about pagination in a connection.
+"""
+type PageInfo @shareable {
+  "The cursor to continue from when paginating forward."
+  endCursor: String
+  "Whether there are more items when paginating forward."
+  hasNextPage: Boolean!
+  "Whether there are more items when paginating backward."
+  hasPreviousPage: Boolean!
+  "The cursor to continue from them paginating backward."
+  startCursor: String
+}
+
+"""
+A profile contains metadata about a specific user.
+"""
+type Profile @key(fields: "id") @key(fields: "account { id }") {
+  "The unique ID of the user's profile."
+  id: ID!
+  "The date and time the profile was created."
+  createdAt: DateTime!
+  "The Auth0 account tied to this profile."
+  account: Account!
+  "The full name of the user."
+  fullName: String
+  "A tag-like list of topics of interest to the user."
+  interests: [String]
+  "Whether the currently authenticated user has another user in their network."
+  isInNetwork: Boolean
+  "Other users that have been added to the user's network."
+  network (
+    first: Int
+    after: String
+    last: Int
+    before: String
+    orderBy: ProfileOrderBy = USERNAME_ASC
+  ): ProfileConnection
+  "The unique username of the user."
+  username: String!
+}
+
+"""
+A list of profile edges with pagination information.
+"""
+type ProfileConnection {
+  "A list of profile edges."
+  edges: [ProfileEdge]
+  "Information to assist with pagination."
+  pageInfo: PageInfo!
+}
+
+"""
+A single profile node with its cursor.
+"""
+type ProfileEdge {
+  "A cursor for use in pagination."
+  cursor: ID!
+  "A profile at the end of an edge."
+  node: Profile!
+}
+
+# INPUTS
+
+"""
+Provides data to create a new user profile.
+"""
+input CreateProfileInput {
+  "The new user's unique Auth0 ID."
+  accountId: ID!
+  "The new user's full name."
+  fullName: String
+  "A tag-like list of topics of interest to the user."
+  interests: [String]
+  "The new user's username (must be unique)."
+  username: String!
+}
+
+"""
+Provides the unique ID of an existing profile to add or remove from a network.
+"""
+input NetworkMemberInput {
+  "The unique Auth0 ID of the user that is updating their network."
+  accountId: ID!
+  "The unique profile ID of the user to be added or removed from a network."
+  networkMemberId: ID!
+}
+
+"""
+Provides data to update an existing profile.
+"""
+input UpdateProfileInput {
+  "The new user's unique Auth0 ID."
+  accountId: ID!
+  "The updated full name of the user."
+  fullName: String
+  "An updated list of tag-like topics of interest to the user."
+  interests: [String]
+  "The updated unique username of the user."
+  username: String
+}
+
+# ROOT
+
+type Query {
+  "Retrieves a single profile by username."
+  profile(username: String!): Profile! @private
+  "Retrieves a list of profiles."
+  profiles(
+    after: String
+    before: String
+    first: Int
+    last: Int
+    orderBy: ProfileOrderBy = USERNAME_ASC
+  ): ProfileConnection @private
+  "Performs a search of user profiles. Results are available in descending order by relevance only."
+  searchProfiles(
+    after: String
+    first: Int
+    "The text string to search for in usernames or full names."
+    query: String!
+  ): ProfileConnection @private
+}
+
+type Mutation {
+  "Allows one user to add another user to their network."
+  addToNetwork(input: NetworkMemberInput!): Profile!
+    @owner(argumentName: "input.accountId")
+  "Creates a new profile tied to an Auth0 account."
+  createProfile(input: CreateProfileInput!): Profile!
+    @owner(argumentName: "input.accountId")
+  "Deletes a user profile."
+  deleteProfile(accountId: ID!): Boolean! 
+    @scope(permissions: ["delete:profiles"])
+  "Allows one user to remove another user from their network."
+  removeFromNetwork(input: NetworkMemberInput!): Profile! 
+    @owner(argumentName: "input.accountId")
+  "Remove user from other users' networks"
+  removeUserFromNetworks(accountId: ID!): Boolean! 
+    @scope(permissions: ["update:profiles"])
+  "Updates a user's profile details."
+  updateProfile(input: UpdateProfileInput!): Profile!
+    @owner(argumentName: "input.accountId")
+}

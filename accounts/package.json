@@ -1,0 +1,26 @@
+{
+  "name": "marked-accounts",
+  "version": "1.0.0",
+  "description": "The server for the accounts service in the Marked app.",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon -r dotenv/config -e env,graphql,js ./src/index.js"
+  },
+  "keywords": [],
+  "author": "mandiwise",
+  "license": "MIT",
+  "dependencies": {
+    "@apollo/subgraph": "^2.0.3",
+    "apollo-datasource": "^3.3.1",
+    "apollo-server": "^3.7.0",
+    "auth0": "^2.40.0",
+    "dataloader": "^2.1.0",
+    "dotenv": "^16.0.0",
+    "graphql": "^16.5.0",
+    "request": "^2.88.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
