@@ -1,34 +1,14 @@
 import http from "http";
-import { ApolloServer, gql } from "apollo-server-express";
-import { ApolloServerPluginDrainHttpServer } from "apollo-server-core";
-import express from "express";
+import app from "./config/app.js";
+import initGateway from "./config/apollo.js";
 const port = process.env.PORT;
-const app = express();
 const httpServer = http.createServer(app);
-
-const typeDefs = gql`
-    type Query {
-        hello: String
-    }
-`;
-const resolvers = {
-    Query: {
-        hello() {
-            return "world";
-        }
-    }
-};
-
-const gateway = new ApolloServer({
-    typeDefs,
-    resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })]
-});
+const gateway = initGateway(httpServer);
 
 await gateway.start();
 gateway.applyMiddleware({ app, path: "/" });
 
-await new Promise(resolve => httpServer.listen({ port }, resolve));
+await new Promise(resolve => httpServer.listen({ port },resolve));
 
 console.log(
     `Gateway ready at
